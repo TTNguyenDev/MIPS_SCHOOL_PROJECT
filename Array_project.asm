@@ -1,69 +1,52 @@
+#define - $s0 store size of array
+#       - $s1 store elements of array
+
 .data
-	array: .word 20, 10, 2, 3, 4, 5
-	array_size: .space 4
+	array: .word 100
 	
-	Menu: .asciiz "\n----------------MENU----------------\n1. Xuat ra cac phan tu\n2. Tinh tong cac phan tu\n3. Liet ke cac phan tu la so nguyen to\n4. Max\n5. Find element\n6. Exit"
 	Result: .asciiz "\nKet qua: "
         Space: .asciiz " "
         Enter: .asciiz "\n"
         GetNumOfElement: .asciiz "\nNhap vao su lua chon cua ban: "
+        GetSizeOfArray: .asciiz "\nNhap vao so luong phan tu: "
+        ShowOption: .asciiz "\n----------------MENU----------------\n1. Xuat ra cac phan tu\n2. Tinh tong cac phan tu\n3. Liet ke cac phan tu la so nguyen to\n4. Max\n5. Find element\n6. Exit"
  
         
 .text
 .globl main
-
 main:
-	
-	# store the number of elements
-	la		$t0, array_size
-	la		$t1, array
-	sub		$t2, $t0, $t1
-	srl		$t2, $t2, 2
-	sw		$t2, 0($t0)
-	
-	
-	#Print output to console
-	jal		OUTPUT_FUNC
-	
-	
-	
-	j EXIT
-	
-OUTPUT_FUNC:
-	la		$s0, array
-	lw		$t0, array_size
-	
-	addi $v0, $0, 4
-	la $a0, Result
+	j getSize
+		
+
+getSize: 
+	la $a0, GetSizeOfArray
+	li $v0, 4
 	syscall
 	
-Loop_main1:
-	beq		$t0, $zero, MENU
+	li, $v0, 5
+	syscall	
+	blez $v0, getSize
+	move $s0, $v0 #s0 register store size of array	
+	move $t0, $s0 #create a copy of $s0
+	la $s1, array
+	j getInput
+
+
+getInput:
+	beq $t0, 0, MENU
 	
-	li		$v0, 4
-	la		$a0, Space
+	li $v0, 5
 	syscall
-	
-	li		$v0, 1
-	lw		$a0, 0($s0)
-	syscall
-	
-	addi	$t0, $t0, -1
-	addi	$s0, $s0, 4
-	
-	j		Loop_main1
-	
+	sw $v0, ($s1)
+	addi $t0, $t0, -1
+	addi $s1, $s1, 4
+	b getInput
 	
 
-SUM:
-	
-	
-
-	
 MENU: 
 	#Print menu 
 	addi $v0, $0, 4
-	la $a0, Menu
+	la $a0, ShowOption
 	syscall
 	
 	addi $v0, $0, 4
@@ -84,3 +67,5 @@ EXIT:
 	#Ket thuc chuong trinh
 	addi $v0, $0 10
 	syscall
+
+
