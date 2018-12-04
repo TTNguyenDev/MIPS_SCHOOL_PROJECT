@@ -65,9 +65,8 @@ MENU:
 	bgt $t0, 6, MENU
 	blez $t0, MENU
 	
-	
-	
-	
+	beq $t0, 1, output
+	beq $t0, 2, sum
 	jal EXIT
 	
 output: 
@@ -75,10 +74,12 @@ output:
 	la $a0, Result
 	li, $v0, 4
 	syscall
-	la $s1, array
-	move $t0, $s0
 	
-loop:
+	move $t0, $s0 #copy size of array to $t0
+	la $s1, array #load array address
+	jal output_loop
+	
+output_loop:
 	beq $t0, 0, MENU
 	
 	lw $t2, ($s1)
@@ -93,7 +94,36 @@ loop:
 	addi $t0, $t0, -1
 	addi $s1, $s1, 4
 	
-	b loop
+	b output_loop
+	
+sum: 
+	la $a0, Result
+	li $v0, 4
+	syscall
+	
+	move $t0, $s0
+	la $s1, array
+	li $a0, 0 #$t3 is store sum of array
+	jal sum_loop
+	
+	
+sum_loop:
+	beq $t0, 0, sumResult
+	
+	lw $t2, ($s1)
+	add $a0, $a0, $t2
+	
+	addi $t0, $t0, -1
+	addi $s1, $s1, 4
+	
+	b sum_loop
+	
+sumResult:
+	
+	li $v0,1 
+  	syscall   
+	
+	jal MENU
 	
 EXIT: 
 	#Ket thuc chuong trinh
