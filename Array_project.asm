@@ -8,6 +8,7 @@
         Enter: .asciiz "\n"
         GetNumOfElement: .asciiz "\nNhap vao su lua chon cua ban: "
         GetSizeOfArray: .asciiz "\nNhap vao so luong phan tu: "
+        Getx: .asciiz "\nNhap vao phan tu can tim: "
         ShowOption: .asciiz "\n----------------MENU----------------\n1. Xuat ra cac phan tu\n2. Tinh tong cac phan tu\n3. Liet ke cac phan tu la so nguyen to\n4. Max\n5. Find element\n6. Exit"
  	Result: .asciiz "\nKet qua: "
  	comma: .asciiz  ", "
@@ -18,7 +19,6 @@
 main:
 	jal getSize
 	j EXIT
-
 
 getSize: 
 	la $a0, GetSizeOfArray
@@ -33,7 +33,6 @@ getSize:
 	la $s1, array
 	jal getInput
 
-
 getInput:
 	beq $t0, 0, MENU
 	
@@ -43,7 +42,6 @@ getInput:
 	addi $t0, $t0, -1
 	addi $s1, $s1, 4
 	b getInput
-	
 
 MENU: 
 	#Print menu 
@@ -69,6 +67,7 @@ MENU:
 	beq $t0, 2, sum
 	
 	beq $t0, 4, max
+	beq $t0, 5, findPos
 	jal EXIT
 	
 output: 
@@ -157,8 +156,47 @@ maxResult:
 	li $v0,1 
   	syscall   
 	
-	jal MENU		  
+	jal MENU	
 	
+findPos:
+	li $v0, 4
+	la $a0, Getx
+	syscall
+	
+	#Nhap so nguyen
+	li $v0, 5
+	syscall
+	
+	move $a0, $v0 #a0 store x
+	
+	move $t0, $s0
+	la $s1, array
+	jal findPos_loop
+	
+findPos_loop:
+	beq $t0, 0, falseLabel
+	
+	lw $t2, ($s1)
+	beq $t2, $a0, trueLabel
+	
+	addi $t0, $t0, -1
+	addi $s1, $s1, 4
+	
+	b findPos_loop
+	
+trueLabel:
+	sub $a0, $s0, $t0	
+	li $v0,1 
+  	syscall   
+	
+	jal MENU	
+	
+falseLabel:
+	li $a0, -1
+	li $v0, 1
+	syscall	
+	
+	jal MENU
 	
 EXIT: 
 	#Ket thuc chuong trinh
