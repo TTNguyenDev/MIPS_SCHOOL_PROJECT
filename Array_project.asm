@@ -67,6 +67,8 @@ MENU:
 	
 	beq $t0, 1, output
 	beq $t0, 2, sum
+	
+	beq $t0, 4, max
 	jal EXIT
 	
 output: 
@@ -103,7 +105,7 @@ sum:
 	
 	move $t0, $s0
 	la $s1, array
-	li $a0, 0 #$t3 is store sum of array
+	li $a0, 0 #$a0 is store sum of array
 	jal sum_loop
 	
 	
@@ -124,6 +126,39 @@ sumResult:
   	syscall   
 	
 	jal MENU
+	
+max: 
+	la $a0, Result
+	li $v0, 4
+	syscall
+	
+	move $t0, $s0
+	la $s1, array
+	lw $a0, ($s1) #$a0 now store the first element of array
+	
+	jal max_loop
+
+max_loop:
+	beq $t0, 0 maxResult
+	
+	lw $t2, ($s1)
+	bgt $t2, $a0, setNewMaxValue
+	
+	addi $t0, $t0, -1
+	addi $s1, $s1, 4
+	
+	b max_loop
+	
+setNewMaxValue:
+	move $a0, $t2
+	jal max_loop
+
+maxResult:
+	li $v0,1 
+  	syscall   
+	
+	jal MENU		  
+	
 	
 EXIT: 
 	#Ket thuc chuong trinh
