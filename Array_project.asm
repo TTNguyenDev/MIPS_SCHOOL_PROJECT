@@ -4,43 +4,47 @@
 .data
 	array: .word 100
 	
-        Space: .asciiz " "
         Enter: .asciiz "\n"
-        GetNumOfElement: .asciiz "\nNhap vao su lua chon cua ban: "
         GetSizeOfArray: .asciiz "\nNhap vao so luong phan tu: "
         Getx: .asciiz "\nNhap vao phan tu can tim: "
-        ShowOption: .asciiz "\n----------------MENU----------------\n1. Xuat ra cac phan tu\n2. Tinh tong cac phan tu\n3. Liet ke cac phan tu la so nguyen to\n4. Max\n5. Find element\n6. Exit"
+        ShowOption: .asciiz "\n----------------MENU----------------\n1. Xuat ra cac phan tu\n2. Tinh tong cac phan tu\n3. Liet ke cac phan tu la so nguyen to\n4. Max\n5. Find element\n6. Exit \nNhap vao su lua chon cua ban:  "
  	Result: .asciiz "\nKet qua: "
  	comma: .asciiz  ", "
-        
+ 	space: .asciiz " "
+     
+           
 .text
-
 .globl main
 main:
-	jal getSize
+	jal getSize  
 	j EXIT
 
 getSize: 
-	la $a0, GetSizeOfArray
+	la $a0, GetSizeOfArray  #Get size of array
 	li $v0, 4
 	syscall
 	
-	li, $v0, 5
+	li, $v0, 5  #request user input every element
 	syscall	
-	blez $v0, getSize
+
+	blez $v0, getSize #create a loop to let user enter a number > 0
 	move $s0, $v0 #s0 register store size of array	
 	move $t0, $s0 #create a copy of $s0
-	la $s1, array
+	
+	la $s1, array  # load array to $s1
 	jal getInput
 
 getInput:
-	beq $t0, 0, MENU
+	beq $t0, 0, MENU #when counter = 0, jump to MENU
 	
-	li $v0, 5
+	li $v0, 5  #Request user input
 	syscall
-	sw $v0, ($s1)
-	addi $t0, $t0, -1
-	addi $s1, $s1, 4
+	
+	sw $v0, ($s1)  #Save element to $s1
+	
+	addi $t0, $t0, -1 #i--
+	addi $s1, $s1, 4 #move pointer 4bit
+	
 	b getInput
 
 MENU: 
@@ -48,30 +52,25 @@ MENU:
 	li $v0, 4
 	la $a0, ShowOption
 	syscall
-	
-	li $v0, 4
-	la $a0, GetNumOfElement
-	syscall
-	
-	#Nhap so nguyen
+		
+	#Request user input
 	li $v0, 5
 	syscall
 	
-	#Luu tru so nguyen vua nhap vao $t0
+	#Save user input to $t0
 	add $t0, $v0, $0
 	
-	bgt $t0, 6, MENU
-	blez $t0, MENU
+	bgt $t0, 6, MENU #$t0 > 6 jump to MENU
+	blez $t0, MENU #$t0 < 0 jump to MENu
 	
 	beq $t0, 1, output
 	beq $t0, 2, sum
-	
+	beq $t0, 3, initPrime
 	beq $t0, 4, max
 	beq $t0, 5, findPos
-	jal EXIT
+	j EXIT
 	
 output: 
-
 	la $a0, Result
 	li, $v0, 4
 	syscall
@@ -107,7 +106,6 @@ sum:
 	li $a0, 0 #$a0 is store sum of array
 	jal sum_loop
 	
-	
 sum_loop:
 	beq $t0, 0, sumResult
 	
@@ -120,7 +118,6 @@ sum_loop:
 	b sum_loop
 	
 sumResult:
-	
 	li $v0,1 
   	syscall   
 	
@@ -136,7 +133,7 @@ max:
 	lw $a0, ($s1) #$a0 now store the first element of array
 	
 	jal max_loop
-
+	
 max_loop:
 	beq $t0, 0 maxResult
 	
@@ -198,9 +195,38 @@ falseLabel:
 	
 	jal MENU
 	
+initPrime: 
+	la $s1, array #load array to register $s1
+	move $t0, $s0 #$t0 is know as a counter
+
+printPrime:
+	beq $t0, 0, MENU #when counter = 0, jump to Menu
+	
+	lw $t6, ($s1) #load element to St6 register
+	move $t1, $t6 # use $t1 as a counter for check prime number
+	addi $t2, $0, 2 #counter
+	
+	addi $s1, $s1, 4 #move $s1 4bit
+	addi $t0, $t0, -1 #i--
+	isPrime: 
+		beq $t1, $t2, true # if t1 = t2 -> is a prime 
+		div $t1, $t2 #t1 / t2
+		mfhi $t4 #get value of t1 / t2
+		beq $t4, $0, printPrime #$t4 = 0 -> is not a prime 
+		addi $t2, $t2, 1
+		j isPrime
+	true:
+		li $v0, 1
+		move $a0, $t1
+		syscall
+		
+		li $v0, 4
+		la $a0, space
+		syscall
+		
+		j printPrime
+
 EXIT: 
 	#Ket thuc chuong trinh
 	addi $v0, $0 10
 	syscall 
-
-
